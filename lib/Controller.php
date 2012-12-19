@@ -121,43 +121,6 @@ abstract class Controller extends Plugin {
 	}
 
 	/**
-	 * @param array $array
-	 * @param SimpleXMLElement $xml
-	 */
-	protected function arr2xml(array $array, \SimpleXMLElement $xml) {
-
-		foreach ($array as $key => $value) {
-			$attr = null;
-
-			if (is_numeric($key)) {
-				$attr	= $key;
-				$key	= 'xitem';
-			}
-
-			if (is_array($value)) { // Handle Arrays
-				$child	= $xml->addChild($key);
-				$this->arr2xml($value, $child);
-			}
-			elseif ($value instanceof \ArrayObject) { // Handle ArrayObject's
-				$child	= $xml->addChild($key);
-				$this->arr2xml($value->getArrayCopy(), $child);
-			}
-			else {
-				// TODO: temporary hack to handle special html entities (&raquo; for example) - XML does not allow unrecognize "&";
-				$value	= str_replace('&amp;',			'@@@@AMP@@@@',	$value);
-				$value	= str_replace('&',				'&amp;',		$value);
-				$value	= str_replace('@@@@AMP@@@@',	'&amp;',		$value);
-				
-				$child	= $xml->addChild($key, $value);
-			}
-
-			if (null !== $attr) {
-				$child->addAttribute('key', $attr);
-			}
-		}
-	}
-	
-	/**
 	 * @param string $callback
 	 * @param array $data
 	 */
