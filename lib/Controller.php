@@ -107,20 +107,6 @@ abstract class Controller extends Plugin {
 	}
 
 	/**
-	 * @param object $data
-	 * @return mixed
-	 */
-	protected function xml(array $data) {
-		$xml	= new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><root />');
-		$this->arr2xml($data, $xml);
-		
-		$this->getResponse()->setContentType(Response::_CONTENT_TYPE_XML); /* Set Content Type */
-		$this->getLayout()
-		->setRendered()
-			->setParam(Mvc::_DEFAULT_ZONE, $xml->asXML()); /* Append XML string to output tag */
-	}
-
-	/**
 	 * @param string $callback
 	 * @param array $data
 	 */
