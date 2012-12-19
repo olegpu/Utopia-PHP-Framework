@@ -7,7 +7,7 @@
  * 
  * @link http://code.google.com/p/utopia-php-framework/
  * @author Eldad Fux <eldad@fuxie.co.il>
- * @version 1.0 RC2
+ * @version 1.0 RC3
  * @license The MIT License (MIT) <http://www.opensource.org/licenses/mit-license.php>
  */
 
@@ -74,6 +74,9 @@ class View extends Plugin {
 		return (bool)$this->rendered;
 	}
 	
+	/**
+	 * @return string
+	 */
 	public function render() {
 	
 		if ($this->rendered) {
@@ -106,14 +109,6 @@ class View extends Plugin {
 	}
 	
 	/**
-	 * @param string $key
-	 * @return string
-	 */
-	public function translate($key) {
-		return $this->getLocale()->getLanguage()->translate($key);
-	}
-	
-	/**
 	 * @param string $filename
 	 * @param int $type
 	 */
@@ -122,10 +117,9 @@ class View extends Plugin {
 			return '//' . $_SERVER['HTTP_HOST'] . '/images/404.gif';
 		}
 		
-		return '//media.247news.co.il/' . $type . '-' . $filename; // TODO fix this according to production or development
+		return '//media.' . $_SERVER['HTTP_HOST'] . '/' . $type . '-' . $filename;
 	}
 	
-	//TODO complete this doc block
 	/**
 	 * @param string $controller
 	 * @param string $action

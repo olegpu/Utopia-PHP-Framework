@@ -7,7 +7,7 @@
  * 
  * @link http://code.google.com/p/utopia-php-framework/
  * @author Eldad Fux <eldad@fuxie.co.il>
- * @version 1.0 RC2
+ * @version 1.0 RC3
  * @license The MIT License (MIT) <http://www.opensource.org/licenses/mit-license.php>
  */
 
@@ -31,11 +31,6 @@ class Application {
 	private $router = null;
 
 	/**
-	 * @var Locale
-	 */
-	private $locale = null;
-	
-	/**
 	 * @var bool
 	 */
 	private $dev = false;
@@ -57,6 +52,12 @@ class Application {
 		
 		/* Load application settings */
 		$this->loader 	= new Loader;
+		
+		$current = basename(realpath('../'));
+		
+		$this->loader
+			->addEnviorment('Utopia', 'framework') // Framework enviorment
+			->addEnviorment(ucfirst($current), $current); // Current project enviorment
 		
 		/* Load core objects */
 		$this->layout 	= new Layout();
@@ -94,25 +95,6 @@ class Application {
 	 */
 	public function getRouter() {
 		return $this->router;
-	}
-
-	/**
-	 * @param Locale $locale
-	 */
-	public function setLocale(Locale $locale) {		
-		$this->locale = $locale; 
-		return $this;
-	}
-	
-	/**
-	 * @return Locale
-	 */
-	public function getLocale() {
-		if (null == $this->locale) {
-			throw new \Exception('No locale has been set');
-		}
-		
-		return $this->locale;
 	}
 
 	/**

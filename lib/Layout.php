@@ -7,7 +7,7 @@
  * 
  * @link http://code.google.com/p/utopia-php-framework/
  * @author Eldad Fux <eldad@fuxie.co.il>
- * @version 1.0 RC2
+ * @version 1.0 RC3
  * @license The MIT License (MIT) <http://www.opensource.org/licenses/mit-license.php>
  */
 
@@ -31,6 +31,11 @@ class Layout extends View {
 	private $meta = array();
 	
 	/**
+	 * @var array
+	 */
+	private $links = array();
+	
+	/**
 	 * @var string
 	 */
 	private $title = '';
@@ -48,17 +53,18 @@ class Layout extends View {
 	 * @param string $title
 	 */
 	public function setTitle($title) {
-		$this->title = $title;
+		$this->title = $this->escape($title);
 		return $this;
 	}
 	
 	/**
-	 * @param string $path
+	 * @param string $url
 	 * @return Layout
 	 */
-	public function addStyle($path) {
-		if (!array_key_exists($path, $this->scripts)) {
-			$this->styles[$path] = true;
+	public function addStyle($url) {
+		if (!array_key_exists($url, $this->styles)) {
+			$this->styles[$url] = true;
+			$this->addLink('stylesheet', '', $url, '', true);
 		}
 		return $this;
 	}
@@ -67,9 +73,9 @@ class Layout extends View {
 	 * @param string $path
 	 * @return Layout
 	 */
-	public function addScript($path) {
-		if (!array_key_exists($path, $this->scripts)) {
-			$this->scripts[$path] = true;
+	public function addScript($url) {
+		if (!array_key_exists($url, $this->scripts)) {
+			$this->scripts[$url] = '<script src="' . $url . '"></script>' . "\n\t\t";
 		}
 		return $this;
 	}
@@ -90,70 +96,61 @@ class Layout extends View {
 	 * @return Layout
 	 */
 	public function addMeta($content, $name = '', $property = '') {
-		
 		if (empty($name) && empty($property)) {
 			throw new \Exception('Meta tag must have at least $name or $property');
 		}
 		
-		$this->meta[$name . '_' . $property] = array(
-			'name'		=> $name,
-			'property' 	=> $property,
-			'content' 	=> $content
-		);
+		$name 		= (!empty($name)) ? 'name="' . $name . '" ' : '';
+		$property	= (!empty($property)) ? 'property="' . $property . '" ' : '';
+		
+		$this->meta[$name . '_' . $property] = '<meta ' . $name . $property . 'content="' . $content . '" />' . "\n\t\t";
+		
+		return $this;
+	}
+
+	/**
+	 * @param string $rel
+	 * @param string $type
+	 * @param string $href
+	 * @param string $title
+	 * @return Layout
+	 */
+	public function addLink($rel, $type = '', $href = '', $title = '', $multiple = false) {
+		$href 	= (!empty($href)) ? ' href="' . $href . '"' : '';
+		$type 	= (!empty($type)) ? ' type="' . $type . '"' : '';
+		$title 	= (!empty($title)) ? ' title="' . $title . '"' : '';
+		
+		$tag = '<link rel="' . $rel. '"' . $type . $href . $title. ' />' . "\n\t\t";
+		
+		if ($multiple) {
+			$this->links[] = $tag;
+		}
+		else {
+			$this->links[$rel] = $tag; 
+		}
 		
 		return $this;
 	}
 	
+	/**
+	 * (non-PHPdoc)
+	 * @see \Utopia\View::render()
+	 */
 	public function render() {
-
-		if ($this->rendered) { /* Return only content if layout should not be rendered */
+		if ($this->rendered) { // Return only content if layout should not be rendered
 			return $this->getParam('content');
 		}
 		
 		/* Set HTML head section */
-		$head = $this->setMetas();
-		$head .= $this->setStyles();
-		$head .= $this->setScripts();
+		$head = implode('', $this->meta);
+		$head .= implode('', $this->links);
+		$head .= implode('', $this->scripts);
 		$head .= ($this->inlineScript) ? '<script>' . $this->inlineScript . '</script>' . "\n" : '';
 		$head .= '<title>' . $this->title . '</title>' . "\n";
 		
 		$this->setParam('head', $head);
 		
 		return parent::render();
-	}
-
-	private function setStyles() {
-		$styleTag = '';
-		
-		foreach ($this->styles as $style => $temp) {
-			$styleTag .= '<link rel="stylesheet" href="' . $style . '"/>' . "\n\t\t";
-		}
-		
-		return $styleTag;
-	}
-	
-	private function setScripts() {
-		$scriptTag = '';
-		
-		foreach ($this->scripts as $script => $temp) {
-			$scriptTag .= '<script src="' . $script . '"></script>' . "\n\t\t";
-		}
-		
-		return $scriptTag;	
-	}
-	
-	private function setMetas() {
-		$metaTag = '';
-
-		foreach ($this->meta as $meta) {
-			
-			$name 		= (!empty($meta['name'])) ? 'name="' . $meta['name'] . '" ' : '';
-			$property	= (!empty($meta['property'])) ? 'property="' . $meta['property'] . '" ' : '';
-			
-			$metaTag .= '<meta ' . $name . $property . 'content="' . $meta['content'] . '" />' . "\n\t\t";
-		}
-
-		return $metaTag;
 	}
 
 }

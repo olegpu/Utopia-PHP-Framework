@@ -7,7 +7,7 @@
  * 
  * @link http://code.google.com/p/utopia-php-framework/
  * @author Eldad Fux <eldad@fuxie.co.il>
- * @version 1.0 RC2
+ * @version 1.0 RC3
  * @license The MIT License (MIT) <http://www.opensource.org/licenses/mit-license.php>
  */
 
@@ -15,6 +15,7 @@ namespace Utopia;
 
 class Mvc extends Plugin {
 
+	// FIXME Change content name to body
 	const _DEFAULT_ZONE = 'content';
 	
 	/**
@@ -64,11 +65,8 @@ class Mvc extends Plugin {
 			}
 		}
 		
-		/* Set Response */
-		$this->getResponse()->send();
-		
-		/* Print page */
-		return $this->getLayout()->render();
+		/* Send Response */
+		$this->getResponse()->send($this->getLayout()->render());
 	}
 	
 	/**
@@ -94,7 +92,7 @@ class Mvc extends Plugin {
 
 		// Create View
 		$view = new View();
-		$view->setPath('../app/view/' . strtolower($cname . '/' . $aname) . '.phtml')->setParam('vars', $vars);
+		$view->setPath('../app/views/' . strtolower($cname . '/' . $aname) . '.phtml')->setParam('vars', $vars);
 		
 		// Create controller
 		$cname = $cname.'Controller';
@@ -106,14 +104,14 @@ class Mvc extends Plugin {
 				require_once $path;	
 			}
 			else {
-				throw new \Exception('No ' . $name . ' controller exists');
+				throw new \Exception('No ' . $cname . ' controller exists');
 			}
 			
 			$this->controllers[$cname] = new $cname();
 		}
 		
 		// Attach view to controller
-		$this->controllers[$cname]->setView($view);
+		$this->controllers[$cname]->setView($view); //FIXME test this
 
 		// Process action
 		$action = $aname . 'Action';

@@ -7,7 +7,7 @@
  * 
  * @link http://code.google.com/p/utopia-php-framework/
  * @author Eldad Fux <eldad@fuxie.co.il>
- * @version 1.0 RC2
+ * @version 1.0 RC3
  * @license The MIT License (MIT) <http://www.opensource.org/licenses/mit-license.php>
  */
 
@@ -20,15 +20,8 @@ class Loader {
 	 */
 	private $enviorments = array();
 	
-	function __construct() {
+	public function __construct() {
 		spl_autoload_register(array($this, 'loader'));		
-		
-		// FIXME remove this dependencies!!
-		$current = basename(realpath('../'));
-		
-		$this
-			->addEnviorment('Utopia', 'framework') // Framework enviorment
-			->addEnviorment(ucfirst($current), $current); // Current project enviorment
 	}
 
 	/**

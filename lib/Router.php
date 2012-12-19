@@ -7,7 +7,7 @@
  * 
  * @link http://code.google.com/p/utopia-php-framework/
  * @author Eldad Fux <eldad@fuxie.co.il>
- * @version 1.0 RC2
+ * @version 1.0 RC3
  * @license The MIT License (MIT) <http://www.opensource.org/licenses/mit-license.php>
  */
 
@@ -26,18 +26,17 @@ abstract class Router extends Plugin {
 	 * @return string
 	 */
 	abstract public function getAction();
+
+	/**
+	 * @param string $action
+	 * @param string $controller
+	 * @param array $vars
+	 * @return string
+	 */
+	abstract public function getUrl($action, $controller, array $vars = array());
 	
 	/**
 	 * @return array
 	 */
 	public function getVars() {}
-	
-	/**
-	 * Returns locale code (string) or false if no locale has been set
-	 * 
-	 * @return mixed
-	 */
-	public function getLocale() {
-		return false;
-	}
 }

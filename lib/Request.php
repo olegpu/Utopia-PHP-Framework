@@ -7,25 +7,37 @@
  * 
  * @link http://code.google.com/p/utopia-php-framework/
  * @author Eldad Fux <eldad@fuxie.co.il>
- * @version 1.0 RC2
+ * @version 1.0 RC3
  * @license The MIT License (MIT) <http://www.opensource.org/licenses/mit-license.php>
  */
 
 namespace Utopia;
 
 class Request {
-
+	
+    const _METHOD_OPTIONS = 'OPTIONS';
+    const _METHOD_GET     = 'GET';
+    const _METHOD_HEAD    = 'HEAD';
+    const _METHOD_POST    = 'POST';
+    const _METHOD_PUT     = 'PUT';
+    const _METHOD_DELETE  = 'DELETE';
+    const _METHOD_TRACE   = 'TRACE';
+    const _METHOD_CONNECT = 'CONNECT';
+    
 	/**
 	 * @var array
 	 */
 	private $storage = array();
 
 	/**
-	 * @return bool
+	 * @var array
 	 */
-	public function isPost() {
-		return (isset($_POST)) ? true : false;
-	}
+	private $inputs = null;
+	
+	/**
+	 * @var array
+	 */
+	private $headers = null;
 	
 	/**
 	 * @param string $key
@@ -88,5 +100,71 @@ class Request {
 	 */
 	public function getStorage($key, $default = null) {
 		return (isset($this->storage[$key])) ? $this->storage[$key] : $default;
+	}
+
+	/**
+	 * @param string $key
+	 * @param mixed $default
+	 * @return mixed
+	 */
+	public function getInput($key, $default = null) {
+		$inputs = $this->generateInputs();
+		return (isset($inputs[$key])) ? $inputs[$key] : $default;
+	}
+
+	/**
+	 * @param string $key
+	 * @param mixed $default
+	 * @return mixed
+	 */
+	public function getHeader($key, $default = null) {
+		$headers = $this->generateHeaders();
+		return (isset($headers[$key])) ? $headers[$key] : $default;
+	}
+	
+	/**
+	 * @param string $method
+	 * @return array:
+	 */
+	public function getMethodParams($method) {
+		switch ($method) {
+			case self::_METHOD_GET:
+				return $_GET;
+			break;
+
+			case self::_METHOD_POST:
+				return $_POST;
+			break;
+
+			case self::_METHOD_PUT:
+				return $this->generateInputs();
+			break;
+			
+			case self::_METHOD_DELETE:
+				return $this->generateInputs();
+			break;
+		};
+	}
+
+	/**
+	 * @return array
+	 */
+	private function generateInputs() {
+		if (null === $this->inputs) {
+			parse_str(file_get_contents('php://input'), $this->inputs);
+		}
+	
+		return $this->inputs;
+	}
+
+	/**
+	 * @return array
+	 */
+	private function generateHeaders() {
+		if (null === $this->headers) {
+			$this->headers = getallheaders();
+		}
+	
+		return $this->headers;
 	}
 }
