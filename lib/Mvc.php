@@ -7,16 +7,16 @@
  * 
  * @link http://code.google.com/p/utopia-php-framework/
  * @author Eldad Fux <eldad@fuxie.co.il>
- * @version 1.0 RC3
+ * @version 1.0 RC4
  * @license The MIT License (MIT) <http://www.opensource.org/licenses/mit-license.php>
  */
 
 namespace Utopia;
 
-class Mvc extends Plugin {
+class Mvc {
+	use Bridge;
 
-	// FIXME Change content name to body
-	const _DEFAULT_ZONE = 'content';
+	const _DEFAULT_ZONE = 'body';
 	
 	/**
 	 * @var array
@@ -95,10 +95,10 @@ class Mvc extends Plugin {
 		$view->setPath('../app/views/' . strtolower($cname . '/' . $aname) . '.phtml')->setParam('vars', $vars);
 		
 		// Create controller
-		$cname = $cname.'Controller';
+		$cname = $cname . 'Controller';
 
 		if (!array_key_exists($cname, $this->controllers)){
-			$path = '../app/controllers/'.$cname.'.php';
+			$path = '../app/controllers/' . $cname . '.php';
 			
 			if (is_readable($path)) {
 				require_once $path;	
@@ -117,7 +117,12 @@ class Mvc extends Plugin {
 		$action = $aname . 'Action';
 		
 		try {
-			$this->controllers[$cname]->$action();
+			if (method_exists($this->controllers[$cname], $action)) {
+				$this->controllers[$cname]->$action();
+			}
+			else {
+				throw new \Exception('Unknown Action "' . $action . '"', 404);
+			}
 		}
 		catch (\Exception $e) { /* call error action instead */
 			$this->controllers[$cname]->errorAction($e);

@@ -7,13 +7,13 @@
  * 
  * @link http://code.google.com/p/utopia-php-framework/
  * @author Eldad Fux <eldad@fuxie.co.il>
- * @version 1.0 RC3
+ * @version 1.0 RC4
  * @license The MIT License (MIT) <http://www.opensource.org/licenses/mit-license.php>
  */
 
 namespace Utopia;
 
-abstract class Plugin {
+trait Bridge {
 
 	/**
 	 * @return Application
@@ -26,21 +26,28 @@ abstract class Plugin {
 	 * @return Layout
 	 */
 	protected function getLayout() {
-		return $this->getApp()->layout;
+		return $this->getApp()->getLayout();
 	}
 	
 	/**
 	 * @return Request
 	 */
 	protected function getRequest() {
-		return $this->getApp()->request;
+		return $this->getApp()->getRequest();
 	}
 	
 	/**
 	 * @return Response
 	 */
 	protected function getResponse() {
-		return $this->getApp()->response;
+		return $this->getApp()->getResponse();
+	}
+	
+	/**
+	 * @return Router
+	 */
+	protected function getRouter() {
+		return $this->getApp()->getRouter();
 	}
 	
 	/**

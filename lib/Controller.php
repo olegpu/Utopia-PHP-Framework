@@ -7,13 +7,14 @@
  * 
  * @link http://code.google.com/p/utopia-php-framework/
  * @author Eldad Fux <eldad@fuxie.co.il>
- * @version 1.0 RC3
+ * @version 1.0 RC4
  * @license The MIT License (MIT) <http://www.opensource.org/licenses/mit-license.php>
  */
 
 namespace Utopia;
 
-abstract class Controller extends Plugin {
+abstract class Controller {
+	use Bridge;
 	
 	/**
 	 * @var View
@@ -63,7 +64,7 @@ abstract class Controller extends Plugin {
 			//throw new \Exception('Can\'t echo action directly from controller');
 		}
 		
-		return $this->getApp()->mvc->getAction($zone, $controller, $action, $vars);
+		return $this->getApp()->getMvc()->getAction($zone, $controller, $action, $vars);
 	}
 	
 	/**
@@ -106,6 +107,57 @@ abstract class Controller extends Plugin {
 			->setParam(Mvc::_DEFAULT_ZONE, 'parent.' . $callback . '(' . json_encode($data) . ');'); /* Append json string to output tag */
 	}
 
+	/**
+	 * @param object $data
+	 * @return mixed
+	 */
+	protected function xml(array $data) {
+		$xml	= new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><root />');
+		$this->arr2xml($data, $xml);
+		
+		$this->getResponse()->setContentType(Response::_CONTENT_TYPE_XML); /* Set Content Type */
+		$this->getLayout()
+		->setRendered()
+			->setParam(Mvc::_DEFAULT_ZONE, $xml->asXML()); /* Append XML string to output tag */
+	}
+
+	/**
+	 * @param array $array
+	 * @param SimpleXMLElement $xml
+	 */
+	protected function arr2xml(array $array, \SimpleXMLElement $xml) {
+
+		foreach ($array as $key => $value) {
+			$attr = null;
+
+			if (is_numeric($key)) {
+				$attr	= $key;
+				$key	= 'xitem';
+			}
+
+			if (is_array($value)) { // Handle Arrays
+				$child	= $xml->addChild($key);
+				$this->arr2xml($value, $child);
+			}
+			elseif ($value instanceof \ArrayObject) { // Handle ArrayObject's
+				$child	= $xml->addChild($key);
+				$this->arr2xml($value->getArrayCopy(), $child);
+			}
+			else {
+				// TODO: temporary hack to handle special html entities (&raquo; for example) - XML does not allow unrecognize "&";
+				$value	= str_replace('&amp;',			'@@@@AMP@@@@',	$value);
+				$value	= str_replace('&',				'&amp;',		$value);
+				$value	= str_replace('@@@@AMP@@@@',	'&amp;',		$value);
+				
+				$child	= $xml->addChild($key, $value);
+			}
+
+			if (null !== $attr) {
+				$child->addAttribute('key', $attr);
+			}
+		}
+	}
+	
 	/**
 	 * @param string $callback
 	 * @param array $data

@@ -7,7 +7,7 @@
  * 
  * @link http://code.google.com/p/utopia-php-framework/
  * @author Eldad Fux <eldad@fuxie.co.il>
- * @version 1.0 RC3
+ * @version 1.0 RC4
  * @license The MIT License (MIT) <http://www.opensource.org/licenses/mit-license.php>
  */
 
@@ -19,12 +19,32 @@ class Application {
 	 * @var Application
 	 */
 	private static $instance = null;
+
+	/**
+	 * @var Layout
+	 */
+	private $layout;
 	
 	/**
 	 * @var Loader
 	 */
-	public $loader;
-
+	private $loader;
+	
+	/**
+	 * @var Mvc
+	 */
+	private $mvc;
+	
+	/**
+	 * @var Request
+	 */
+	private $request;
+	
+	/**
+	 * @var response
+	 */
+	private $response;
+	
 	/**
 	 * @var Router
 	 */
@@ -51,7 +71,7 @@ class Application {
 	private function __construct() {
 		
 		/* Load application settings */
-		$this->loader 	= new Loader;
+		$this->loader = new Loader();
 		
 		$current = basename(realpath('../'));
 		
@@ -59,12 +79,18 @@ class Application {
 			->addEnviorment('Utopia', 'framework') // Framework enviorment
 			->addEnviorment(ucfirst($current), $current); // Current project enviorment
 		
-		/* Load core objects */
-		$this->layout 	= new Layout();
-		$this->request 	= new Request();
-		$this->response = new Response();
-		$this->mvc 		= new Mvc();
+		/**
+		 * Set Core Models
+		 */
+		$this
+			->setLayout(new Layout())
+			->setMvc(new Mvc())
+			->setRequest(new Request())
+			->setResponse(new Response())
+		;
 	}
+	
+	private function __clone() {}
 	
 	/**
 	 * @return Application
@@ -83,11 +109,71 @@ class Application {
 	}
 	
 	/**
+	 * @param Layout $layout
+	 */
+	public function setLayout(Layout $layout) {
+		$this->layout = $layout;
+		return $this;
+	}
+	
+	/**
+	 * @param Mvc $mvc
+	 */
+	public function setMvc(Mvc $mvc) {
+		$this->mvc = $mvc;
+		return $this;
+	}
+	
+	/**
+	 * @param Request $request
+	 */
+	public function setRequest(Request $request) {
+		$this->request = $request;
+		return $this;
+	}
+	
+	/**
+	 * @param Response $response
+	 */
+	public function setResponse(Response $response) {
+		$this->response = $response;
+		return $this;
+	}
+	
+	/**
 	 * @param Router $router
 	 */
 	public function setRouter(Router $router) {		
 		$this->router = $router; 
 		return $this;
+	}
+	
+	/**
+	 * @return Layout
+	 */
+	public function getLayout() {
+		return $this->layout;
+	}
+	
+	/**
+	 * @return Mvc
+	 */
+	public function getMvc() {
+		return $this->mvc;
+	}
+	
+	/**
+	 * @return Request
+	 */
+	public function getRequest() {
+		return $this->request;
+	}
+	
+	/**
+	 * @return Response
+	 */
+	public function getResponse() {
+		return $this->response;
 	}
 	
 	/**
@@ -121,55 +207,6 @@ class Application {
 		$this->loader->addEnviorment($namespace, $path);
 		return $this;
 	}
-	
-	/* Plugin / Helpers Engine */
-	
-	/**
-	 * @param Plugin $pluginObj
-	 * @param string $namespace
-	 * @return mixed
-	 */
-	public function registerPlugin(Plugin $pluginObj, $namespace = null){
-
-		if (null != $namespace) {
-			$this->$namespace = $pluginObj;
-			return $this;
-		}
-		
-		$key = get_class($pluginObj);
-		
-		if (!isset($this->registry[$key])) {
-			$this->registry[$key] = $pluginObj;
-			
-			/* Import object methods */
-			foreach (get_class_methods($pluginObj) as $key => $method){
-				if ((!array_key_exists($method, $this->methods)) || ($method == '__construct')) {
-					$this->methods[$method] = &$pluginObj;
-				}
-				else {
-					throw new \Exception('Method ' . $method . ' already exists');
-				}
-			}
-			
-			return $this;
-		}
-		else {
-			throw new \Exception('Plugin registration with no namespace supports only one instance of each class');
-		}
-	}
-	
-	/**
-	 * @param string $method
-	 * @param array $args
-	 */
-	public function __call ($method, $args) {
-		if (array_key_exists($method, $this->methods)){
-			$args[] =& $this;
-			return call_user_func_array(array($this->methods[$method], $method), $args);
-		}
-		throw new \Exception('Call to undefined method / class function: ' . $method);
-	}
-	
 }
 
 

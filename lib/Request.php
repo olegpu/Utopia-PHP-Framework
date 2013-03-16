@@ -7,7 +7,7 @@
  * 
  * @link http://code.google.com/p/utopia-php-framework/
  * @author Eldad Fux <eldad@fuxie.co.il>
- * @version 1.0 RC3
+ * @version 1.0 RC4
  * @license The MIT License (MIT) <http://www.opensource.org/licenses/mit-license.php>
  */
 
@@ -126,24 +126,20 @@ class Request {
 	 * @param string $method
 	 * @return array:
 	 */
-	public function getMethodParams($method) {
-		switch ($method) {
+	public function getMethodParams() {
+		switch ($this->getServer('REQUEST_METHOD', self::_METHOD_GET)) {
 			case self::_METHOD_GET:
 				return $_GET;
 			break;
-
+			
 			case self::_METHOD_POST:
 				return $_POST;
 			break;
-
-			case self::_METHOD_PUT:
-				return $this->generateInputs();
-			break;
 			
-			case self::_METHOD_DELETE:
+			default:
 				return $this->generateInputs();
 			break;
-		};
+		}
 	}
 
 	/**
@@ -151,7 +147,18 @@ class Request {
 	 */
 	private function generateInputs() {
 		if (null === $this->inputs) {
-			parse_str(file_get_contents('php://input'), $this->inputs);
+			$requestInput = file_get_contents('php://input');
+
+			switch ($this->getHeader('Content-Type')) {
+				case 'application/json;charset=UTF-8':
+				case 'application/json':
+					$this->inputs = json_decode($requestInput, true);
+				break;
+				
+				default:
+					parse_str($requestInput, $this->inputs);
+				break;
+			}
 		}
 	
 		return $this->inputs;
